@@ -1,795 +1,259 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Family Runner - Bahasa Inggris Kelas 3</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Three.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- FontAwesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
-        
-        * {
-            user-select: none;
-            -webkit-user-select: none;
-            font-family: 'Fredoka', sans-serif;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #1a1a2e;
-        }
-
-        #game-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Glassmorphism utility */
-        .glass {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .glass-dark {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Animated background elements */
-        .pulse-btn {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* Confetti / Particle Overlay */
-        .feedback-overlay {
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>3D My Family English Runner - by Nana Alfiana S.Pd.,Gr</title>
+<style>
+  *{box-sizing:border-box} html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#87CEEB;font-family:Arial,Helvetica,sans-serif;touch-action:none}
+  canvas{display:block}
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:20;color:#fff;text-shadow:0 2px 5px #003b55}
+  #lives{position:absolute;left:14px;top:14px;font-size:28px;background:#006d91bb;padding:8px 12px;border-radius:18px;border:2px solid #fff}
+  #score{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:25px;font-weight:900;background:#00a9dccc;padding:9px 20px;border-radius:18px;border:2px solid #fff}
+  #mission{position:absolute;top:68px;left:50%;transform:translateX(-50%);font-weight:900;font-size:13px;background:#ffbf00e8;padding:7px 14px;border-radius:16px;color:#17304a;text-shadow:none;white-space:nowrap}
+  #mute{pointer-events:auto;position:absolute;right:14px;top:14px;border:2px solid white;background:#0b6e99dd;color:#fff;border-radius:14px;padding:10px 13px;font-weight:bold;font-size:16px;cursor:pointer}
+  #message{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);font-size:48px;font-weight:1000;text-align:center;opacity:0;transition:opacity .12s;text-shadow:0 4px 0 #004c6a,0 7px 12px #0008}
+  #flash{position:fixed;inset:0;background:#ff2222;opacity:0;z-index:15;pointer-events:none}
+  #startOverlay{position:fixed;inset:0;z-index:9998;background:linear-gradient(#87CEEBdd,#00d4ffdd);display:flex;align-items:center;justify-content:center;padding:18px}
+  #panel{max-width:720px;width:100%;background:#ffffffed;border:5px solid #00d4ff;border-radius:30px;padding:26px;text-align:center;box-shadow:0 20px 60px #00344b66;color:#17405a}
+  h1{font-size:clamp(27px,6vw,48px);margin:0 0 12px;color:#007ca6;text-shadow:0 2px #fff}
+  #panel p{font-size:17px;line-height:1.45;margin:10px}
+  #startBtn{position:relative;z-index:9999;pointer-events:auto;touch-action:manipulation;border:0;border-bottom:7px solid #d58f00;background:#ffd21c;color:#17304a;border-radius:24px;padding:19px 34px;margin-top:14px;font-size:clamp(25px,6vw,38px);font-weight:1000;cursor:pointer;box-shadow:0 8px 20px #0003}
+  #startBtn:active{transform:translateY(4px);border-bottom-width:3px}
+  #controls{position:fixed;z-index:30;bottom:20px;left:0;right:0;display:flex;justify-content:space-between;padding:0 25px;pointer-events:none}
+  .arrow{pointer-events:auto;width:84px;height:84px;border-radius:50%;border:3px solid #fff;background:#00a9d888;color:white;font-size:46px;font-weight:bold;box-shadow:0 5px 15px #003b5577;touch-action:manipulation}
+  #gameover{position:fixed;z-index:100;inset:0;background:#00374cbb;display:none;align-items:center;justify-content:center;text-align:center;color:white}
+  #gameover .box{background:#006d91;border:4px solid #00d4ff;padding:28px;border-radius:26px;box-shadow:0 20px 50px #0008}
+  #restart{border:0;background:#ffd21c;border-radius:18px;padding:14px 25px;font-size:23px;font-weight:900;cursor:pointer}
+  #confetti{position:fixed;inset:0;z-index:25;pointer-events:none}
+  @media(min-width:800px){#controls{padding:0 55px}.arrow{width:76px;height:76px;opacity:.65}}
+</style>
 </head>
-<body class="bg-slate-900 text-white flex flex-col justify-between">
-
-    <div id="game-container">
-        <!-- 3D Canvas rendered by Three.js -->
-
-        <!-- HUD (Heads Up Display) Overlay -->
-        <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-10 hidden">
-            <!-- Score & Coins -->
-            <div class="flex flex-col gap-2">
-                <div class="glass px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
-                    <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
-                    <div>
-                        <div class="text-xs text-amber-200 font-bold uppercase tracking-wider">Skor</div>
-                        <div id="score-text" class="text-2xl font-black text-white">0</div>
-                    </div>
-                </div>
-                <div class="glass px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
-                    <i class="fa-solid fa-coins text-yellow-300 text-2xl"></i>
-                    <div>
-                        <div class="text-xs text-yellow-200 font-bold uppercase tracking-wider">Koin</div>
-                        <div id="coins-text" class="text-xl font-bold text-white">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Question Counter & Current Quest -->
-            <div class="flex flex-col items-center max-w-md w-full mx-4">
-                <div class="glass px-6 py-2 rounded-full mb-2 shadow-md">
-                    <span id="question-number" class="text-lg font-bold text-yellow-300">Soal 1 / 10</span>
-                </div>
-                <!-- Active Question Box -->
-                <div id="question-box" class="glass-dark p-4 rounded-3xl w-full text-center border-2 border-yellow-400/50 shadow-2xl transition-all duration-300">
-                    <div class="text-xs text-cyan-400 font-bold uppercase tracking-widest mb-1">Terjemahkan ke Bahasa Inggris / Indonesia</div>
-                    <div id="question-text" class="text-xl md:text-2xl font-black text-white drop-shadow-md">Loading Question...</div>
-                </div>
-            </div>
-
-            <!-- Lives/Hearts -->
-            <div class="glass px-4 py-2 rounded-2xl flex items-center gap-2 shadow-lg">
-                <i class="fa-solid fa-heart text-red-500 text-2xl drop-shadow"></i>
-                <span id="lives-text" class="text-2xl font-black text-white">3</span>
-            </div>
-        </div>
-
-        <!-- Feedback Animation Overlay (Correct / Wrong) -->
-        <div id="feedback-overlay" class="feedback-overlay absolute inset-0 flex flex-col items-center justify-center opacity-0 z-20 transition-opacity duration-300">
-            <div id="feedback-icon" class="text-8xl mb-4 transform scale-50 transition-transform duration-300"></div>
-            <div id="feedback-text" class="text-4xl font-black text-white drop-shadow-lg tracking-wider uppercase"></div>
-        </div>
-
-        <!-- Mobile Touch Controls overlay -->
-        <div id="mobile-controls" class="absolute bottom-16 left-0 w-full px-6 flex justify-between items-center z-10 md:hidden">
-            <button id="btn-left" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-white shadow-lg"><i class="fa-solid fa-arrow-left"></i></button>
-            <div class="flex gap-4">
-                <button id="btn-jump" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-amber-300 shadow-lg"><i class="fa-solid fa-arrow-up"></i></button>
-                <button id="btn-slide" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-cyan-300 shadow-lg"><i class="fa-solid fa-arrow-down"></i></button>
-            </div>
-            <button id="btn-right" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-white shadow-lg"><i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-
-        <!-- Start Screen Modal -->
-        <div id="start-screen" class="absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <div class="glass-dark max-w-lg w-full p-8 rounded-3xl text-center shadow-2xl border border-white/20">
-                <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-4xl text-slate-950 font-black shadow-lg mb-4 transform -rotate-6">
-                    <i class="fa-solid fa-people-roof"></i>
-                </div>
-                <h1 class="text-4xl font-black bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent mb-1">FAMILY RUNNER 3D</h1>
-                <p class="text-amber-400 font-semibold text-xs tracking-wider mb-3 uppercase">UPTD SD 16 Barru by Nana Alfiana, S.Pd.,Gr</p>
-                <p class="text-slate-300 mb-6 text-sm md:text-base">Belajar Kosakata Bahasa Inggris Kelas 3 SD (Fase B) topik <span class="text-yellow-400 font-bold">"My Family"</span> sambil berlari!</p>
-                
-                <div class="bg-slate-800/60 p-4 rounded-2xl text-left text-xs md:text-sm text-slate-300 mb-6 space-y-2 border border-white/5">
-                    <div class="font-bold text-amber-400 mb-1 flex items-center gap-2"><i class="fa-solid fa-gamepad"></i> Cara Bermain:</div>
-                    <p>• Gunakan Panah <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Kiri</span> & <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Kanan</span> untuk berpindah jalur.</p>
-                    <p>• Panah <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Atas</span> untuk Melompat, Panah <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Bawah</span> untuk Menunduk.</p>
-                    <p>• Berlarilah menembus gerbang jawaban <span class="text-green-400 font-bold">(A, B, atau C)</span> yang paling tepat!</p>
-                </div>
-
-                <button id="start-btn" class="pulse-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xl rounded-2xl shadow-xl shadow-emerald-900/40 border-b-4 border-emerald-700 transform active:translate-y-1 transition-all">
-                    MULAI BERMAIN <i class="fa-solid fa-play ml-2"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Game Over / Victory Modal -->
-        <div id="game-over-screen" class="absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
-            <div class="glass-dark max-w-md w-full p-8 rounded-3xl text-center shadow-2xl border border-white/20">
-                <div id="result-icon" class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-5xl mb-4 shadow-lg"></div>
-                <h2 id="result-title" class="text-3xl font-black mb-1">SELESAI!</h2>
-                <p class="text-amber-400 font-semibold text-xs tracking-wider mb-2 uppercase">UPTD SD 16 Barru by Nana Alfiana, S.Pd.,Gr</p>
-                <p id="result-subtitle" class="text-slate-300 text-sm mb-6">Kamu telah menyelesaikan tantangan!</p>
-
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-slate-800/80 p-3 rounded-2xl border border-white/5">
-                        <div class="text-xs text-slate-400 font-bold uppercase">Skor Akhir</div>
-                        <div id="final-score" class="text-2xl font-black text-amber-400">0</div>
-                    </div>
-                    <div class="bg-slate-800/80 p-3 rounded-2xl border border-white/5">
-                        <div class="text-xs text-slate-400 font-bold uppercase">Jawaban Benar</div>
-                        <div id="final-correct" class="text-2xl font-black text-emerald-400">0 / 10</div>
-                    </div>
-                </div>
-
-                <button id="restart-btn" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-lg rounded-2xl shadow-xl shadow-amber-900/40 border-b-4 border-amber-700 transform active:translate-y-1 transition-all">
-                    MAIN LAGI <i class="fa-solid fa-rotate-right ml-2"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mandatory Footer -->
-    <footer class="w-full bg-slate-950 text-amber-400 text-center py-2 px-4 text-xs font-bold tracking-wide border-t border-slate-800 z-40 relative shadow-inner">
-        UPTD SD 16 Barru by Nana Alfiana, S.Pd.,Gr
-    </footer>
-
-    <script>
-        /* --- QUESTION BANK (10 SOAL MY FAMILY FASE B KELAS 3) --- */
-        const questionBank = [
-            {
-                q: "Apa bahasa Inggris dari 'Ayah'?",
-                options: ["Mother", "Father", "Brother"],
-                answer: 1 // Father
-            },
-            {
-                q: "Arti dari kata 'Mother' adalah ...",
-                options: ["Ibu", "Nenek", "Bibi"],
-                answer: 0 // Ibu
-            },
-            {
-                q: "Bahasa Inggris dari 'Saudara Laki-laki' adalah ...",
-                options: ["Sister", "Brother", "Uncle"],
-                answer: 1 // Brother
-            },
-            {
-                q: "Apa arti dari 'Grandfather'?",
-                options: ["Paman", "Kakek", "Ayah"],
-                answer: 1 // Kakek
-            },
-            {
-                q: "Bahasa Inggris dari 'Keluarga' adalah ...",
-                options: ["Friend", "Teacher", "Family"],
-                answer: 2 // Family
-            },
-            {
-                q: "'Sister' dalam bahasa Indonesia artinya ...",
-                options: ["Saudara Perempuan", "Saudara Laki-laki", "Ibu"],
-                answer: 0 // Saudara Perempuan
-            },
-            {
-                q: "Bahasa Inggris dari 'Nenek' adalah ...",
-                options: ["Grandmother", "Grandfather", "Aunt"],
-                answer: 0 // Grandmother
-            },
-            {
-                q: "Siapakah 'Uncle' itu dalam bahasa Indonesia?",
-                options: ["Kakek", "Paman", "Ayah"],
-                answer: 1 // Paman
-            },
-            {
-                q: "Apa bahasa Inggris dari 'Bibi' atau 'Tante'?",
-                options: ["Aunt", "Sister", "Mother"],
-                answer: 0 // Aunt
-            },
-            {
-                q: "'Cousin' artinya adalah ...",
-                options: ["Sepupu", "Keponakan", "Tetangga"],
-                answer: 0 // Sepupu
-            }
-        ];
-
-        // Game Engine Variables
-        let scene, camera, renderer;
-        let playerGroup, playerBody;
-        let lanePositions = [-3, 0, 3]; // Left, Center, Right lanes
-        let currentLane = 1; // 0: Left, 1: Center, 2: Right
-        let targetX = 0;
-        
-        // Physics & Movement
-        let isJumping = false;
-        let isSliding = false;
-        let jumpVelocity = 0;
-        const gravity = -0.018;
-        let playerY = 0;
-        let playerScaleY = 1;
-
-        // Gameplay State
-        let isPlaying = false;
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let coins = 0;
-        let correctAnswers = 0;
-        let lives = 3;
-        let gameSpeed = 0.25;
-        let worldDistance = 0;
-
-        // Dynamic Game Objects
-        let roadSegments = [];
-        let gates = [];
-        let obstacles = [];
-        let coinObjects = [];
-        let gateSpawnDistance = 60;
-
-        function init3D() {
-            const container = document.getElementById('game-container');
-            
-            // Scene
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1e293b);
-            scene.fog = new THREE.FogExp2(0x1e293b, 0.015);
-
-            // Camera
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 4.5, 8);
-            camera.rotation.x = -0.3;
-
-            // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(renderer.domElement);
-
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
-
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            dirLight.position.set(20, 40, 20);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 1024;
-            dirLight.shadow.mapSize.height = 1024;
-            dirLight.shadow.camera.near = 0.5;
-            dirLight.shadow.camera.far = 150;
-            dirLight.shadow.camera.left = -20;
-            dirLight.shadow.camera.right = 20;
-            dirLight.shadow.camera.top = 20;
-            dirLight.shadow.camera.bottom = -20;
-            scene.add(dirLight);
-
-            // Build Initial World
-            createPlayer();
-            createEnvironment();
-
-            // Handle Resize
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function createPlayer() {
-            playerGroup = new THREE.Group();
-
-            // Body (Runner Boy/Girl Style)
-            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.4, 1.4, 12);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.3 }); // Blue Shirt
-            playerBody = new THREE.Mesh(bodyGeo, bodyMat);
-            playerBody.position.y = 0.9;
-            playerBody.castShadow = true;
-            playerGroup.add(playerBody);
-
-            // Head
-            const headGeo = new THREE.SphereGeometry(0.4, 16, 16);
-            const headMat = new THREE.MeshStandardMaterial({ color: 0xfbd38d }); // Skin
-            const head = new THREE.Mesh(headGeo, headMat);
-            head.position.y = 1.8;
-            head.castShadow = true;
-            playerGroup.add(head);
-
-            // Hair/Cap
-            const capGeo = new THREE.SphereGeometry(0.42, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-            const capMat = new THREE.MeshStandardMaterial({ color: 0xef4444 }); // Red Cap
-            const cap = new THREE.Mesh(capGeo, capMat);
-            cap.position.y = 1.85;
-            playerGroup.add(cap);
-
-            // Visor
-            const visorGeo = new THREE.BoxGeometry(0.4, 0.05, 0.3);
-            const visor = new THREE.Mesh(visorGeo, capMat);
-            visor.position.set(0, 1.85, -0.35);
-            playerGroup.add(visor);
-
-            // Backpack
-            const packGeo = new THREE.BoxGeometry(0.6, 0.7, 0.3);
-            const packMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b });
-            const pack = new THREE.Mesh(packGeo, packMat);
-            pack.position.set(0, 1.0, 0.35);
-            playerGroup.add(pack);
-
-            playerGroup.position.set(0, 0, 0);
-            scene.add(playerGroup);
-        }
-
-        function createEnvironment() {
-            // Create continuous road tiles
-            for (let i = 0; i < 10; i++) {
-                spawnRoadTile(i * -20);
-            }
-        }
-
-        function spawnRoadTile(zPos) {
-            const roadGroup = new THREE.Group();
-
-            // Main Track (3 Lanes)
-            const roadGeo = new THREE.BoxGeometry(11, 0.2, 20);
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
-            const road = new THREE.Mesh(roadGeo, roadMat);
-            road.position.y = -0.1;
-            road.receiveShadow = true;
-            roadGroup.add(road);
-
-            // Lane Dividers
-            const lineGeo = new THREE.BoxGeometry(0.15, 0.22, 20);
-            const lineMat = new THREE.MeshStandardMaterial({ color: 0xfacc15 });
-            
-            const line1 = new THREE.Mesh(lineGeo, lineMat);
-            line1.position.set(-1.5, -0.09, 0);
-            roadGroup.add(line1);
-
-            const line2 = new THREE.Mesh(lineGeo, lineMat);
-            line2.position.set(1.5, -0.09, 0);
-            roadGroup.add(line2);
-
-            // Side grass / decor
-            const grassGeo = new THREE.BoxGeometry(10, 0.2, 20);
-            const grassMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
-            
-            const grassL = new THREE.Mesh(grassGeo, grassMat);
-            grassL.position.set(-10.5, -0.1, 0);
-            roadGroup.add(grassL);
-
-            const grassR = new THREE.Mesh(grassGeo, grassMat);
-            grassR.position.set(10.5, -0.1, 0);
-            roadGroup.add(grassR);
-
-            roadGroup.position.z = zPos;
-            scene.add(roadGroup);
-            roadSegments.push(roadGroup);
-        }
-
-        function createQuestionGates(zPos, questionData) {
-            const gateGroup = new THREE.Group();
-            gateGroup.position.z = zPos;
-            gateGroup.userData = { answered: false, questionData: questionData };
-
-            const labels = ["A", "B", "C"];
-
-            questionData.options.forEach((optText, index) => {
-                const laneX = lanePositions[index];
-
-                // Gate Pillars
-                const pGeo = new THREE.CylinderGeometry(0.15, 0.15, 3.5);
-                const pMat = new THREE.MeshStandardMaterial({ color: 0x64748b });
-                
-                const p1 = new THREE.Mesh(pGeo, pMat);
-                p1.position.set(laneX - 1.2, 1.75, 0);
-                const p2 = new THREE.Mesh(pGeo, pMat);
-                p2.position.set(laneX + 1.2, 1.75, 0);
-                gateGroup.add(p1, p2);
-
-                // Gate Top Banner
-                const bGeo = new THREE.BoxGeometry(2.5, 1.2, 0.2);
-                const isCorrect = (index === questionData.answer);
-                const bMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x1e293b, 
-                    roughness: 0.2
-                });
-                const banner = new THREE.Mesh(bGeo, bMat);
-                banner.position.set(laneX, 3.2, 0);
-                gateGroup.add(banner);
-
-                // Create Canvas Texture for Text (Label + Option Text)
-                const canvas = document.createElement('canvas');
-                canvas.width = 512;
-                canvas.height = 256;
-                const ctx = canvas.getContext('2d');
-
-                // Canvas Background
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(0, 0, 512, 256);
-                ctx.lineWidth = 12;
-                ctx.strokeStyle = '#f59e0b';
-                ctx.strokeRect(0, 0, 512, 256);
-
-                // Text Formatting
-                ctx.fillStyle = '#facc15';
-                ctx.font = 'bold 50px Fredoka, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`[ ${labels[index]} ]`, 256, 70);
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 42px Fredoka, sans-serif';
-                // Wrap text if needed
-                ctx.fillText(optText, 256, 160);
-
-                const texture = new THREE.CanvasTexture(canvas);
-                const textGeo = new THREE.PlaneGeometry(2.4, 1.1);
-                const textMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-                const textMesh = new THREE.Mesh(textGeo, textMat);
-                textMesh.position.set(laneX, 3.2, 0.11);
-                gateGroup.add(textMesh);
-
-                // Save Metadata for Collision Check
-                banner.userData = {
-                    optionIndex: index,
-                    isCorrect: isCorrect,
-                    parentGate: gateGroup
-                };
-            });
-
-            scene.add(gateGroup);
-            gates.push(gateGroup);
-        }
-
-        function spawnCoinsAndObstacles(zPos) {
-            // Randomly place coins on lanes
-            for (let i = 0; i < 3; i++) {
-                if (Math.random() > 0.4) {
-                    const coinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 16);
-                    const coinMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 });
-                    const coin = new THREE.Mesh(coinGeo, coinMat);
-                    coin.rotation.x = Math.PI / 2;
-                    coin.position.set(lanePositions[i], 0.8, zPos + (Math.random() * 10 - 5));
-                    scene.add(coin);
-                    coinObjects.push(coin);
-                }
-            }
-        }
-
-        function setupControls() {
-            document.addEventListener('keydown', (e) => {
-                if (!isPlaying) return;
-
-                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-                    moveLane(-1);
-                } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                    moveLane(1);
-                } else if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && !isJumping) {
-                    jump();
-                } else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && !isSliding) {
-                    slide();
-                }
-            });
-
-            // Mobile Buttons
-            document.getElementById('btn-left').addEventListener('click', () => moveLane(-1));
-            document.getElementById('btn-right').addEventListener('click', () => moveLane(1));
-            document.getElementById('btn-jump').addEventListener('click', () => { if (!isJumping) jump(); });
-            document.getElementById('btn-slide').addEventListener('click', () => { if (!isSliding) slide(); });
-
-            // Touch Swipe Logic
-            let touchStartX = 0;
-            let touchStartY = 0;
-
-            document.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            });
-
-            document.addEventListener('touchend', (e) => {
-                if (!isPlaying) return;
-                let diffX = e.changedTouches[0].clientX - touchStartX;
-                let diffY = e.changedTouches[0].clientY - touchStartY;
-
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    if (diffX > 30) moveLane(1);
-                    else if (diffX < -30) moveLane(-1);
-                } else {
-                    if (diffY < -30 && !isJumping) jump();
-                    else if (diffY > 30 && !isSliding) slide();
-                }
-            });
-        }
-
-        function moveLane(dir) {
-            currentLane = Math.max(0, Math.min(2, currentLane + dir));
-            targetX = lanePositions[currentLane];
-        }
-
-        function jump() {
-            isJumping = true;
-            jumpVelocity = 0.35;
-        }
-
-        function slide() {
-            isSliding = true;
-            playerScaleY = 0.5;
-            setTimeout(() => {
-                isSliding = false;
-                playerScaleY = 1.0;
-            }, 800);
-        }
-
-        function update() {
-            if (!isPlaying) return;
-
-            // Player Horizontal Smooth Movement
-            playerGroup.position.x += (targetX - playerGroup.position.x) * 0.2;
-
-            // Player Jump Physics
-            if (isJumping) {
-                playerY += jumpVelocity;
-                jumpVelocity += gravity;
-                if (playerY <= 0) {
-                    playerY = 0;
-                    isJumping = false;
-                }
-            }
-            playerGroup.position.y = playerY;
-
-            // Scale for slide
-            playerBody.scale.y = THREE.MathUtils.lerp(playerBody.scale.y, playerScaleY, 0.2);
-
-            // Running Animation (Slight tilt & bounce)
-            if (!isJumping) {
-                playerGroup.rotation.z = (playerGroup.position.x - targetX) * -0.1;
-                playerBody.rotation.x = Math.sin(Date.now() * 0.015) * 0.1;
-            }
-
-            // Move Road & Environment Backwards
-            const currentSpeed = gameSpeed;
-            worldDistance += currentSpeed;
-
-            // Road Recycling Loop
-            roadSegments.forEach((segment) => {
-                segment.position.z += currentSpeed;
-                if (segment.position.z > 15) {
-                    segment.position.z -= 200; // Loop back
-                }
-            });
-
-            // Rotate and Move Coins
-            for (let i = coinObjects.length - 1; i >= 0; i--) {
-                const coin = coinObjects[i];
-                coin.position.z += currentSpeed;
-                coin.rotation.z += 0.05;
-
-                // Coin Collection Detection
-                if (Math.abs(coin.position.z - playerGroup.position.z) < 1.0 &&
-                    Math.abs(coin.position.x - playerGroup.position.x) < 0.8 &&
-                    playerY < 1.5) {
-                    scene.remove(coin);
-                    coinObjects.splice(i, 1);
-                    coins += 1;
-                    score += 10;
-                    updateHUD();
-                } else if (coin.position.z > 10) {
-                    scene.remove(coin);
-                    coinObjects.splice(i, 1);
-                }
-            }
-
-            // Gate Logic & Question Check
-            for (let i = gates.length - 1; i >= 0; i--) {
-                const gate = gates[i];
-                gate.position.z += currentSpeed;
-
-                // Check Player Passing Through Gate
-                if (!gate.userData.answered && gate.position.z > -0.5 && gate.position.z < 1.5) {
-                    gate.userData.answered = true;
-                    checkAnswer(currentLane, gate.userData.questionData);
-                }
-
-                // Cleanup passed gates
-                if (gate.position.z > 15) {
-                    scene.remove(gate);
-                    gates.splice(i, 1);
-                }
-            }
-
-            // Spawn Next Question Gate if none in queue
-            if (gates.length === 0 && currentQuestionIndex < questionBank.length) {
-                spawnCurrentQuestionGate();
-            }
-        }
-
-        function spawnCurrentQuestionGate() {
-            if (currentQuestionIndex >= questionBank.length) return;
-
-            const qData = questionBank[currentQuestionIndex];
-            createQuestionGates(-60, qData);
-            spawnCoinsAndObstacles(-30);
-            updateQuestionUI(qData);
-        }
-
-        function checkAnswer(selectedOptionIndex, qData) {
-            const isCorrect = (selectedOptionIndex === qData.answer);
-            
-            showFeedback(isCorrect);
-
-            if (isCorrect) {
-                score += 100;
-                correctAnswers++;
-            } else {
-                score = Math.max(0, score - 30);
-                lives--;
-            }
-
-            updateHUD();
-
-            // Next Question or End Game
-            currentQuestionIndex++;
-            if (lives <= 0 || currentQuestionIndex >= questionBank.length) {
-                setTimeout(endGame, 1200);
-            }
-        }
-
-        function showFeedback(isCorrect) {
-            const overlay = document.getElementById('feedback-overlay');
-            const icon = document.getElementById('feedback-icon');
-            const text = document.getElementById('feedback-text');
-
-            if (isCorrect) {
-                overlay.className = "feedback-overlay absolute inset-0 flex flex-col items-center justify-center bg-emerald-500/20 z-20 transition-opacity duration-300 opacity-100";
-                icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-                text.innerText = "BENAR! GREAT JOB!";
-                text.className = "text-4xl font-black text-emerald-300 drop-shadow-lg tracking-wider uppercase";
-            } else {
-                overlay.className = "feedback-overlay absolute inset-0 flex flex-col items-center justify-center bg-red-500/20 z-20 transition-opacity duration-300 opacity-100";
-                icon.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500"></i>';
-                text.innerText = "SALAH! OOPS!";
-                text.className = "text-4xl font-black text-red-400 drop-shadow-lg tracking-wider uppercase";
-            }
-
-            icon.style.transform = "scale(1)";
-
-            setTimeout(() => {
-                overlay.style.opacity = '0';
-                icon.style.transform = "scale(0.5)";
-            }, 1000);
-        }
-
-        function updateHUD() {
-            document.getElementById('score-text').innerText = score;
-            document.getElementById('coins-text').innerText = coins;
-            document.getElementById('lives-text').innerText = lives;
-            document.getElementById('question-number').innerText = `Soal ${Math.min(currentQuestionIndex + 1, 10)} / 10`;
-        }
-
-        function updateQuestionUI(qData) {
-            const qText = document.getElementById('question-text');
-            qText.innerText = qData.q;
-        }
-
-        function startGame() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('hud').classList.remove('hidden');
-
-            // Reset States
-            score = 0;
-            coins = 0;
-            lives = 3;
-            correctAnswers = 0;
-            currentQuestionIndex = 0;
-            currentLane = 1;
-            targetX = lanePositions[currentLane];
-            playerGroup.position.set(0, 0, 0);
-
-            // Clear old gates
-            gates.forEach(g => scene.remove(g));
-            gates = [];
-            coinObjects.forEach(c => scene.remove(c));
-            coinObjects = [];
-
-            updateHUD();
-            isPlaying = true;
-            spawnCurrentQuestionGate();
-        }
-
-        function endGame() {
-            isPlaying = false;
-            document.getElementById('hud').classList.add('hidden');
-            const gameOverScreen = document.getElementById('game-over-screen');
-            gameOverScreen.classList.remove('hidden');
-
-            const resIcon = document.getElementById('result-icon');
-            const resTitle = document.getElementById('result-title');
-            const resSub = document.getElementById('result-subtitle');
-
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('final-correct').innerText = `${correctAnswers} / 10`;
-
-            if (correctAnswers >= 7) {
-                resIcon.className = "w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-5xl mb-4 shadow-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-                resIcon.innerHTML = '<i class="fa-solid fa-crown"></i>';
-                resTitle.innerText = "HEBAT / EXCELLENT!";
-                resTitle.className = "text-3xl font-black mb-2 text-emerald-400";
-                resSub.innerText = "Kamu menguasai kosakata My Family dengan sangat baik!";
-            } else {
-                resIcon.className = "w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-5xl mb-4 shadow-lg bg-amber-500/20 text-amber-400 border border-amber-500/40";
-                resIcon.innerHTML = '<i class="fa-solid fa-star-half-stroke"></i>';
-                resTitle.innerText = "BAGUS! COBA LAGI!";
-                resTitle.className = "text-3xl font-black mb-2 text-amber-400";
-                resSub.innerText = "Ayo berlatih lagi agar kosakata Bahasa Inggrismu makin lancar!";
-            }
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            update();
-            renderer.render(scene, camera);
-        }
-
-        window.onload = function () {
-            init3D();
-            setupControls();
-            animate();
-
-            document.getElementById('start-btn').addEventListener('click', startGame);
-            document.getElementById('restart-btn').addEventListener('click', () => {
-                document.getElementById('game-over-screen').classList.add('hidden');
-                startGame();
-            });
-        };
-    </script>
+<body>
+<div id="flash"></div>
+<canvas id="confetti"></canvas>
+<div id="hud">
+  <div id="lives">❤️❤️❤️</div>
+  <div id="score">SKOR: 0</div>
+  <div id="mission">🎯 COLLECT MY FAMILY WORDS ONLY</div>
+  <div id="questionBox" style="position:absolute;top:105px;left:50%;transform:translateX(-50%);min-width:min(92vw,620px);text-align:center;background:#ffffffed;color:#16415b;text-shadow:none;border:3px solid #00d4ff;border-radius:18px;padding:9px 15px;font-weight:900;font-size:17px"><span id="qnum">SOAL 1/10</span><br><span id="qtext">Find: AYAH</span></div>
+  <button id="mute">🔊 Musik</button>
+  <div id="message"></div>
+</div>
+<div id="controls"><button class="arrow" id="leftBtn">◀</button><button class="arrow" id="rightBtn">▶</button></div>
+<div id="startOverlay">
+ <div id="panel">
+   <h1>3D My Family English Runner</h1>
+   <p><b>by Nana Alfiana S.Pd.,Gr</b></p>
+   <p>Selesaikan <b>10 soal My Family</b>. Baca petunjuk bahasa Indonesia, lalu pilih gerbang kata bahasa Inggris yang benar.<br>Pilihan jawaban dibuat berjauhan agar mudah dibaca. Gunakan ← → / A D / swipe / tombol layar.</p>
+   <button id="startBtn">▶ MULAI MAIN</button>
+ </div>
+</div>
+<div id="gameover"><div class="box"><h1 style="color:#fff">GAME OVER</h1><h2 id="finalScore"></h2><button id="restart">MAIN LAGI</button></div></div>
+
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87CEEB);
+scene.fog=new THREE.Fog(0x87CEEB,35,105);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,180);
+camera.position.set(0,5.8,9.6);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.insertBefore(renderer.domElement,document.body.firstChild);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x557744,2.0));
+const sun=new THREE.DirectionalLight(0xffffff,2.1); sun.position.set(-10,20,10); sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024); sun.shadow.camera.left=-20;sun.shadow.camera.right=20;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-10;scene.add(sun);
+
+const roadMat=new THREE.MeshStandardMaterial({color:0x374957,roughness:.9});
+const road=new THREE.Mesh(new THREE.PlaneGeometry(12,220),roadMat); road.rotation.x=-Math.PI/2;road.position.z=-65;road.receiveShadow=true;scene.add(road);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,220),new THREE.MeshStandardMaterial({color:0x65b84f}));
+ground.rotation.x=-Math.PI/2;ground.position.set(0,-.04,-65);ground.receiveShadow=true;scene.add(ground);
+
+for(let z=8;z>-170;z-=5){
+  for(const x of [-1.5,1.5]){
+    const mark=new THREE.Mesh(new THREE.BoxGeometry(.07,.025,2.5),new THREE.MeshBasicMaterial({color:0xffffff}));
+    mark.position.set(x,0.015,z);scene.add(mark);
+  }
+}
+for(const x of [-5.15,5.15]){
+ const rail=new THREE.Mesh(new THREE.BoxGeometry(.1,.08,220),new THREE.MeshStandardMaterial({color:0x777777,metalness:.8}));
+ rail.position.set(x,.08,-65);scene.add(rail);
+}
+for(let z=8;z>-170;z-=2.2){
+ const sleeper=new THREE.Mesh(new THREE.BoxGeometry(11,.07,.16),new THREE.MeshStandardMaterial({color:0x7a4b27}));
+ sleeper.position.set(0,.04,z);scene.add(sleeper);
+}
+const buildingColors=[0xff6b6b,0xffd93d,0x6bcb77,0x4d96ff,0xb983ff,0xff8fab];
+for(let z=5;z>-170;z-=8){
+ for(const side of [-1,1]){
+   const h=4+Math.random()*7,w=3+Math.random()*2;
+   const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,5.5),new THREE.MeshStandardMaterial({color:buildingColors[Math.floor(Math.random()*buildingColors.length)]}));
+   b.position.set(side*(7+Math.random()*3),h/2,z);b.castShadow=true;b.receiveShadow=true;scene.add(b);
+   for(let yy=1.5;yy<h-1;yy+=1.6) for(let xx=-.8;xx<=.8;xx+=1.6){
+     const win=new THREE.Mesh(new THREE.PlaneGeometry(.7,.65),new THREE.MeshBasicMaterial({color:0xcff8ff}));
+     win.position.set(b.position.x-side*(w/2+.006),yy,z+xx);
+     win.rotation.y=side>0?-Math.PI/2:Math.PI/2;scene.add(win);
+   }
+ }
+}
+
+// Character
+const player=new THREE.Group(); player.position.set(0,0,2.2);scene.add(player);
+function mesh(geo,color){const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color}));m.castShadow=true;return m}
+const torso=mesh(new THREE.BoxGeometry(.75,1,.42),0xffffff);torso.position.y=1.45;player.add(torso);
+const shorts=mesh(new THREE.BoxGeometry(.78,.45,.44),0xcc2222);shorts.position.y=.85;player.add(shorts);
+const head=mesh(new THREE.SphereGeometry(.38,18,14),0xf2b37f);head.position.y=2.25;player.add(head);
+const hair=mesh(new THREE.SphereGeometry(.39,18,10,0,Math.PI*2,0,Math.PI/2),0x302018);hair.position.y=2.38;player.add(hair);
+const backpack=mesh(new THREE.BoxGeometry(.62,.78,.25),0xffd21c);backpack.position.set(0,1.45,.33);player.add(backpack);
+const limbs=[];
+function limb(x,y,color,isLeg=false){const p=new THREE.Group();p.position.set(x,y,0);const m=mesh(new THREE.BoxGeometry(isLeg?.24:.18,isLeg?.8:.72,.2),color);m.position.y=-.35;p.add(m);player.add(p);limbs.push(p);return p}
+limb(-.24,.72,0x1c3f88,true);limb(.24,.72,0x1c3f88,true);limb(-.48,1.75,0xf2b37f,false);limb(.48,1.75,0xf2b37f,false);
+
+const lanes=[-3.0,0,3.0];let lane=1,targetX=0;
+const family=['father','mother','sister','brother','grandmother','grandfather','uncle','aunt'];
+const questions=[
+ {id:'AYAH',answer:'father'},{id:'IBU',answer:'mother'},{id:'SAUDARA PEREMPUAN',answer:'sister'},
+ {id:'SAUDARA LAKI-LAKI',answer:'brother'},{id:'NENEK',answer:'grandmother'},{id:'KAKEK',answer:'grandfather'},
+ {id:'PAMAN',answer:'uncle'},{id:'BIBI',answer:'aunt'},{id:'AYAH DARI AYAH/IBU',answer:'grandfather'},
+ {id:'IBU DARI AYAH/IBU',answer:'grandmother'}
+];
+let qIndex=0, setSerial=0, answeredSet=false;
+const qnum=document.querySelector('#qnum'),qtext=document.querySelector('#qtext');
+function updateQuestion(){qnum.textContent='SOAL '+(qIndex+1)+'/10';qtext.textContent='Find: '+questions[qIndex].id+' — pilih kata Inggris yang benar!'}
+updateQuestion();
+const traps=[['happy','ADJECTIVE'],['sad','ADJECTIVE'],['swim','VERB'],['run','VERB'],['book','NOUN'],['table','NOUN'],['car','NOUN']];
+const gates=[];
+function textTexture(word,type){
+ const c=document.createElement('canvas');c.width=512;c.height=180;const ctx=c.getContext('2d');
+ const col=type==='FAMILY'?'#168cff':type==='VERB'?'#2eb85c':type==='ADJECTIVE'?'#f39c12':'#e84c4c';
+ ctx.fillStyle=col;ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#fff';ctx.lineWidth=8;ctx.strokeRect(5,5,502,170);
+ ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+ const label=word.toUpperCase(); let fs=54;
+ while(fs>30){ctx.font='900 '+fs+'px Arial';if(ctx.measureText(label).width<470)break;fs-=2}
+ ctx.fillText(label,256,72);
+ ctx.font='bold 25px Arial';ctx.fillText(type,256,135);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+function makeGate(z, forcedWord=null, forcedType=null, serial=null){
+ let word,type,correct=false;
+ if(forcedWord){word=forcedWord;type=forcedType||'FAMILY';correct=(word===questions[qIndex].answer)}
+ else {const pick=Math.random()<.55?family[Math.floor(Math.random()*family.length)]:traps[Math.floor(Math.random()*traps.length)][0];word=pick;type=family.includes(word)?'FAMILY':'TRAP';correct=(word===questions[qIndex].answer)}
+ const g=new THREE.Group();
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(2.7,1.02),new THREE.MeshBasicMaterial({map:textTexture(word,type),transparent:false}));
+ sign.position.y=1.78;g.add(sign);
+ for(const x of [-1.28,1.28]){const pole=mesh(new THREE.BoxGeometry(.12,2.2,.12),type==='FAMILY'?0x168cff:type==='VERB'?0x2eb85c:type==='ADJECTIVE'?0xf39c12:0xe84c4c);pole.position.set(x,.7,0);g.add(pole)}
+ g.position.set(lanes[Math.floor(Math.random()*3)],0,z);g.userData={word,type,correct,hit:false,serial};scene.add(g);gates.push(g);
+}
+function spawnQuestionSet(z){
+ const ans=questions[qIndex].answer, wrongPool=[...family.filter(w=>w!==ans),...traps.map(x=>x[0])];
+ let words=[ans];
+ while(words.length<3){const w=wrongPool[Math.floor(Math.random()*wrongPool.length)];if(!words.includes(w))words.push(w)}
+ words.sort(()=>Math.random()-.5); const serial=++setSerial;
+ words.forEach((w,i)=>{const type=family.includes(w)?'FAMILY':(traps.find(x=>x[0]===w)?.[1]||'NOUN');makeGate(z,w,type,serial);gates[gates.length-1].position.x=lanes[i]});
+ answeredSet=false;
+}
+spawnQuestionSet(-22);
+
+let score=0,lives=3,running=false,gameOver=false,speed=.0825,worldDistance=0,fallTimer=0,joyTimer=0,shake=0,lastStep=0;
+const scoreEl=document.querySelector('#score'),livesEl=document.querySelector('#lives'),msg=document.querySelector('#message'),flash=document.querySelector('#flash');
+function move(d){if(!running||gameOver)return;lane=Math.max(0,Math.min(2,lane+d));targetX=lanes[lane];joyTimer=Math.max(joyTimer,.28)}
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')move(-1);if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')move(1)});
+function bind(btn,d){btn.addEventListener('pointerdown',e=>{e.preventDefault();move(d)})}
+bind(document.querySelector('#leftBtn'),-1);bind(document.querySelector('#rightBtn'),1);
+let sx=0,sy=0;
+addEventListener('touchstart',e=>{if(e.touches[0]){sx=e.touches[0].clientX;sy=e.touches[0].clientY}},{passive:true});
+addEventListener('touchend',e=>{const t=e.changedTouches[0];if(!t)return;const dx=t.clientX-sx,dy=t.clientY-sy;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1)},{passive:true});
+
+// Audio
+let audioCtx=null,musicTimer=null,muted=false;
+function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended')audioCtx.resume()}
+function tone(freq,dur=.12,type='sine',vol=.08,delay=0){
+ if(muted)return;ensureAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,audioCtx.currentTime+delay);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+delay+dur);o.connect(g).connect(audioCtx.destination);o.start(audioCtx.currentTime+delay);o.stop(audioCtx.currentTime+delay+dur);
+}
+function ding(){tone(660,.12,'sine',.12);tone(880,.18,'sine',.1,.11);tone(1100,.22,'sine',.07,.22)}
+function pop(){tone(420,.06,'square',.04);tone(700,.07,'sine',.04,.05)}
+function buzz(){tone(115,.45,'sawtooth',.09);tone(85,.5,'square',.05,.05)}
+function step(){tone(115,.035,'triangle',.015)}
+function startMusic(){
+ if(musicTimer)return;let n=0;const notes=[523,659,784,659,587,698,880,698];
+ musicTimer=setInterval(()=>{if(running&&!muted){tone(notes[n++%notes.length],.16,'triangle',.018); if(n%4===0)tone(261,.2,'sine',.012)}},250);
+}
+function speak(w){if(muted||!('speechSynthesis'in window))return; speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w+'!');u.lang='en-US';u.rate=.9;u.pitch=1.15;speechSynthesis.speak(u)}
+document.querySelector('#mute').addEventListener('pointerdown',e=>{e.preventDefault();muted=!muted;document.querySelector('#mute').textContent=muted?'🔇 Musik':'🔊 Musik';if(muted&&speechSynthesis)speechSynthesis.cancel()});
+
+function floating(text,color='#fff'){
+ msg.textContent=text;msg.style.color=color;msg.style.opacity=1;msg.animate([{transform:'translate(-50%,-50%) scale(.5)'},{transform:'translate(-50%,-70%) scale(1.25)'},{transform:'translate(-50%,-85%) scale(1)'}],{duration:800,easing:'ease-out'});
+ setTimeout(()=>msg.style.opacity=0,750);
+}
+const cc=document.querySelector('#confetti'),cx=cc.getContext('2d');let conf=[];
+function resizeConf(){cc.width=innerWidth;cc.height=innerHeight}resizeConf();
+function burst(){
+ for(let i=0;i<55;i++)conf.push({x:innerWidth/2,y:innerHeight*.4,vx:(Math.random()-.5)*9,vy:-3-Math.random()*7,g:.22,s:4+Math.random()*6,h:Math.random()*360,a:1});
+}
+function drawConf(){cx.clearRect(0,0,cc.width,cc.height);conf.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.a-=.018;cx.globalAlpha=Math.max(0,p.a);cx.fillStyle=`hsl(${p.h} 90% 55%)`;cx.fillRect(p.x,p.y,p.s,p.s)});cx.globalAlpha=1;conf=conf.filter(p=>p.a>0)}
+
+function correct(g){
+ if(answeredSet)return; answeredSet=true; const serial=g.userData.serial;
+ score+=10;scoreEl.textContent='SKOR: '+score;ding();pop();speak(g.userData.word);burst();floating('+10  '+g.userData.word.toUpperCase(),'#ffe529');joyTimer=.9;
+ gates.filter(x=>x.userData.serial===serial).forEach(x=>scene.remove(x)); for(let i=gates.length-1;i>=0;i--)if(gates[i].userData.serial===serial)gates.splice(i,1);
+ qIndex++;
+ if(qIndex>=questions.length){setTimeout(winGame,850);return}
+ updateQuestion();setTimeout(()=>spawnQuestionSet(-24),650);
+}
+function wrong(g){
+ if(g.userData.hit)return;g.userData.hit=true;lives--;livesEl.textContent='❤️'.repeat(Math.max(0,lives))+'🖤'.repeat(3-Math.max(0,lives));buzz();floating('Oops! Coba lagi','#ffdddd');fallTimer=.85;shake=.7;flash.style.opacity=.45;setTimeout(()=>flash.style.opacity=0,160);
+ if(navigator.vibrate)navigator.vibrate([100,60,120]);if(lives<=0)setTimeout(endGame,450);
+}
+function endGame(){if(gameOver)return;gameOver=true;fallTimer=2;speed=.03;setTimeout(()=>{running=false;document.querySelector('#finalScore').textContent='Skor kamu: '+score;document.querySelector('#gameover').style.display='flex'},850)}
+function recycle(g){
+ const serial=g.userData.serial;scene.remove(g);const i=gates.indexOf(g);if(i>=0)gates.splice(i,1);
+ if(!gameOver&&!answeredSet&&gates.filter(x=>x.userData.serial===serial&&x.parent).length===0)setTimeout(()=>spawnQuestionSet(-24),250);
+}
+function winGame(){
+ if(gameOver)return;gameOver=true;running=false;burst();ding();
+ document.querySelector('#gameover').style.display='flex';
+ document.querySelector('#gameover h1').textContent='CONGRATULATIONS! 🎉';
+ document.querySelector('#finalScore').innerHTML='Hebat! Kamu menyelesaikan 10 soal.<br>Skor kamu: '+score;
+}
+
+const clock=new THREE.Clock();
+function animate(){
+ requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04),t=performance.now()/1000;
+ if(running&&!gameOver){
+   const dz=speed*dt*60;worldDistance+=dz;
+   gates.slice().forEach(g=>{
+     g.position.z+=dz;
+     const dist=Math.abs(g.position.z-player.position.z);
+     if(!g.userData.hit&&dist<.75&&Math.abs(g.position.x-player.position.x)<.72){(g.userData.word===questions[qIndex]?.answer)?correct(g):wrong(g)}
+     if(g.position.z>12)recycle(g);
+   });
+   player.position.x=THREE.MathUtils.lerp(player.position.x,targetX,.14);
+   const run=Math.sin(t*12);limbs[0].rotation.x=run*.65;limbs[1].rotation.x=-run*.65;limbs[2].rotation.x=-run*.65;limbs[3].rotation.x=run*.65;
+   player.position.y=Math.abs(Math.sin(t*12))*.045;
+   if(joyTimer>0){joyTimer-=dt;player.position.y+=Math.sin((.9-joyTimer)*Math.PI*3)*.35;player.scale.setScalar(1+Math.sin((.9-joyTimer)*Math.PI*5)*.05)}
+   else player.scale.setScalar(1);
+   if(fallTimer>0){fallTimer-=dt;player.rotation.z=THREE.MathUtils.lerp(player.rotation.z,-1.15,.12);player.rotation.x=.35}
+   else {player.rotation.z=THREE.MathUtils.lerp(player.rotation.z,0,.14);player.rotation.x=THREE.MathUtils.lerp(player.rotation.x,0,.14)}
+   if(performance.now()-lastStep>340){step();lastStep=performance.now()}
+ }
+ let sh=0;if(shake>0){shake-=dt;sh=(Math.random()-.5)*shake*.28}
+ camera.position.x=THREE.MathUtils.lerp(camera.position.x,player.position.x*.3,.05)+sh;camera.position.y=5.8+sh;camera.lookAt(player.position.x*.18,1.15,-5);
+ drawConf();renderer.render(scene,camera);
+}
+animate();
+
+function startGame(e){
+ if(e){e.preventDefault();e.stopPropagation()}ensureAudio();running=true;gameOver=false;speed=.0825;document.querySelector('#startOverlay').style.display='none';startMusic();
+}
+const sb=document.querySelector('#startBtn');sb.addEventListener('click',startGame);sb.addEventListener('touchstart',startGame,{passive:false});
+document.querySelector('#restart').addEventListener('click',()=>location.reload());
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);resizeConf()});
+</script>
 </body>
 </html>
