@@ -2,468 +2,300 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Runner - English Family Vocabulary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Family Runner - Bahasa Inggris Kelas 3</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
         * {
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        body, html {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
-
-        body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            background-color: #1a1a1a;
-            color: #fff;
+            background-color: #1a1a2e;
         }
 
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        /* UI Overlay Layer */
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
+        #game-container {
             width: 100%;
             height: 100%;
-            z-index: 10;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
+            position: relative;
         }
 
-        /* Header HUD */
-        .hud-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            width: 100%;
-        }
-
-        .hud-card {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            padding: 10px 20px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #fff;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-
-        /* Question Banner - DIPINDAHKAN KE ATAS AGAR TIDAK MENUTUPI JALAN/GERBANG */
-        .question-container {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 600px;
-            background: linear-gradient(135deg, #3a7bd5, #3a6073);
-            border: 3px solid #ffffff;
-            border-radius: 20px;
-            padding: 15px 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-            pointer-events: auto;
-        }
-
-        .question-title {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #ffd700;
-            margin-bottom: 5px;
-            font-weight: 800;
-        }
-
-        .question-text {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #ffffff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-            margin-bottom: 5px;
-        }
-
-        .question-hint {
-            font-size: 0.85rem;
-            color: #e0e0e0;
-        }
-
-        /* Feedback Animation Overlays */
-        #feedback-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
+        canvas {
+            display: block;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 20;
         }
 
-        .feedback-correct {
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.4) 0%, rgba(0,0,0,0) 70%);
-        }
-
-        .feedback-wrong {
-            background: radial-gradient(circle, rgba(231, 76, 60, 0.4) 0%, rgba(0,0,0,0) 70%);
-        }
-
-        .feedback-text {
-            font-size: 4rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            transform: scale(0.5);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        .text-correct { color: #2ecc71; }
-        .text-wrong { color: #e74c3c; }
-
-        /* Footer Attribution */
-        .footer-text {
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            font-weight: 600;
-            pointer-events: auto;
-        }
-
-        /* Modals (Start / Game Over / Win) */
-        .modal {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: 30;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            pointer-events: auto;
-        }
-
-        .modal-card {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 2px solid #38bdf8;
-            border-radius: 24px;
-            padding: 30px;
-            max-width: 480px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-        }
-
-        .modal-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #38bdf8;
-            margin-bottom: 10px;
-        }
-
-        .modal-desc {
-            font-size: 1rem;
-            color: #94a3b8;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #38bdf8, #0284c7);
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.4);
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(2, 132, 199, 0.6);
-        }
-
-        /* Responsive Controls Overlay for Touch Devices */
-        .controls-hint {
-            position: absolute;
-            bottom: 45px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            pointer-events: auto;
-        }
-
-        .touch-btn {
+        /* Glassmorphism utility */
+        .glass {
             background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
-        .hidden { display: none !important; }
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animated background elements */
+        .pulse-btn {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Confetti / Particle Overlay */
+        .feedback-overlay {
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
     </style>
-    <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
-<body>
+<body class="bg-slate-900 text-white flex flex-col justify-between">
 
-    <div id="canvas-container"></div>
+    <div id="game-container">
+        <!-- 3D Canvas rendered by Three.js -->
 
-    <div id="ui-layer">
-        <!-- Header -->
-        <div class="hud-header">
-            <div class="hud-card">
-                <span>SKOR</span>
-                <span id="score-val" style="color: #ffd700;">0</span>
+        <!-- HUD (Heads Up Display) Overlay -->
+        <div id="hud" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-10 hidden">
+            <!-- Score & Coins -->
+            <div class="flex flex-col gap-2">
+                <div class="glass px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
+                    <i class="fa-solid fa-trophy text-amber-400 text-2xl"></i>
+                    <div>
+                        <div class="text-xs text-amber-200 font-bold uppercase tracking-wider">Skor</div>
+                        <div id="score-text" class="text-2xl font-black text-white">0</div>
+                    </div>
+                </div>
+                <div class="glass px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
+                    <i class="fa-solid fa-coins text-yellow-300 text-2xl"></i>
+                    <div>
+                        <div class="text-xs text-yellow-200 font-bold uppercase tracking-wider">Koin</div>
+                        <div id="coins-text" class="text-xl font-bold text-white">0</div>
+                    </div>
+                </div>
             </div>
-            <div class="hud-card">
-                <span>SOAL</span>
-                <span id="question-val" style="color: #38bdf8;">1 / 10</span>
+
+            <!-- Question Counter & Current Quest -->
+            <div class="flex flex-col items-center max-w-md w-full mx-4">
+                <div class="glass px-6 py-2 rounded-full mb-2 shadow-md">
+                    <span id="question-number" class="text-lg font-bold text-yellow-300">Soal 1 / 10</span>
+                </div>
+                <!-- Active Question Box -->
+                <div id="question-box" class="glass-dark p-4 rounded-3xl w-full text-center border-2 border-yellow-400/50 shadow-2xl transition-all duration-300">
+                    <div class="text-xs text-cyan-400 font-bold uppercase tracking-widest mb-1">Terjemahkan ke Bahasa Inggris / Indonesia</div>
+                    <div id="question-text" class="text-xl md:text-2xl font-black text-white drop-shadow-md">Loading Question...</div>
+                </div>
+            </div>
+
+            <!-- Lives/Hearts -->
+            <div class="glass px-4 py-2 rounded-2xl flex items-center gap-2 shadow-lg">
+                <i class="fa-solid fa-heart text-red-500 text-2xl drop-shadow"></i>
+                <span id="lives-text" class="text-2xl font-black text-white">3</span>
             </div>
         </div>
 
-        <!-- Question Banner (Atas) -->
-        <div class="question-container" id="question-box">
-            <div class="question-title">SOAL AKTIF</div>
-            <div class="question-text" id="q-text">Loading...</div>
-            <div class="question-hint">Pilih gerbang (A, B, atau C) sesuai jawaban benar!</div>
+        <!-- Feedback Animation Overlay (Correct / Wrong) -->
+        <div id="feedback-overlay" class="feedback-overlay absolute inset-0 flex flex-col items-center justify-center opacity-0 z-20 transition-opacity duration-300">
+            <div id="feedback-icon" class="text-8xl mb-4 transform scale-50 transition-transform duration-300"></div>
+            <div id="feedback-text" class="text-4xl font-black text-white drop-shadow-lg tracking-wider uppercase"></div>
         </div>
 
-        <!-- Mobile Controls -->
-        <div class="controls-hint">
-            <div class="touch-btn" id="btn-left">◄</div>
-            <div class="touch-btn" id="btn-jump">▲</div>
-            <div class="touch-btn" id="btn-right">►</div>
-        </div>
-
-        <!-- Footer Attribution -->
-        <div class="footer-text">by Nana Alfiana, S.Pd.,Gr-UPTD SDN 16 BARRU</div>
-    </div>
-
-    <!-- Feedback Overlay Animation -->
-    <div id="feedback-overlay">
-        <div id="feedback-msg" class="feedback-text">BENAR!</div>
-    </div>
-
-    <!-- Start Modal -->
-    <div id="start-modal" class="modal">
-        <div class="modal-card">
-            <div class="modal-title">3D ENGLISH RUNNER</div>
-            <div class="modal-desc">
-                Materi: <b>My Family (Kosakata Bahasa Inggris)</b><br><br>
-                Gunakan panah <b>Kiri (◄) / Kanan (►)</b> untuk berpindah jalur, dan panah <b>Atas (▲)</b> untuk melompat.<br><br>
-                Lari dan lewati gerbang dengan jawaban yang benar!
+        <!-- Mobile Touch Controls overlay -->
+        <div id="mobile-controls" class="absolute bottom-16 left-0 w-full px-6 flex justify-between items-center z-10 md:hidden">
+            <button id="btn-left" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-white shadow-lg"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="flex gap-4">
+                <button id="btn-jump" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-amber-300 shadow-lg"><i class="fa-solid fa-arrow-up"></i></button>
+                <button id="btn-slide" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-cyan-300 shadow-lg"><i class="fa-solid fa-arrow-down"></i></button>
             </div>
-            <button class="btn" id="start-btn">MULAI MAIN</button>
-            <p style="margin-top: 20px; font-size: 0.8rem; color: #64748b;">by Nana Alfiana, S.Pd.,Gr-UPTD SDN 16 BARRU</p>
+            <button id="btn-right" class="w-16 h-16 rounded-full glass flex items-center justify-center text-3xl active:scale-95 text-white shadow-lg"><i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+
+        <!-- Start Screen Modal -->
+        <div id="start-screen" class="absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <div class="glass-dark max-w-lg w-full p-8 rounded-3xl text-center shadow-2xl border border-white/20">
+                <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-4xl text-slate-950 font-black shadow-lg mb-4 transform -rotate-6">
+                    <i class="fa-solid fa-people-roof"></i>
+                </div>
+                <h1 class="text-4xl font-black bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent mb-1">FAMILY RUNNER 3D</h1>
+                <p class="text-amber-400 font-semibold text-xs tracking-wider mb-3 uppercase">UPTD SD 16 Barru by Nana Alfiana, S.Pd.,Gr</p>
+                <p class="text-slate-300 mb-6 text-sm md:text-base">Belajar Kosakata Bahasa Inggris Kelas 3 SD (Fase B) topik <span class="text-yellow-400 font-bold">"My Family"</span> sambil berlari!</p>
+                
+                <div class="bg-slate-800/60 p-4 rounded-2xl text-left text-xs md:text-sm text-slate-300 mb-6 space-y-2 border border-white/5">
+                    <div class="font-bold text-amber-400 mb-1 flex items-center gap-2"><i class="fa-solid fa-gamepad"></i> Cara Bermain:</div>
+                    <p>• Gunakan Panah <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Kiri</span> & <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Kanan</span> untuk berpindah jalur.</p>
+                    <p>• Panah <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Atas</span> untuk Melompat, Panah <span class="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">Bawah</span> untuk Menunduk.</p>
+                    <p>• Berlarilah menembus gerbang jawaban <span class="text-green-400 font-bold">(A, B, atau C)</span> yang paling tepat!</p>
+                </div>
+
+                <button id="start-btn" class="pulse-btn w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xl rounded-2xl shadow-xl shadow-emerald-900/40 border-b-4 border-emerald-700 transform active:translate-y-1 transition-all">
+                    MULAI BERMAIN <i class="fa-solid fa-play ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over / Victory Modal -->
+        <div id="game-over-screen" class="absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
+            <div class="glass-dark max-w-md w-full p-8 rounded-3xl text-center shadow-2xl border border-white/20">
+                <div id="result-icon" class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-5xl mb-4 shadow-lg"></div>
+                <h2 id="result-title" class="text-3xl font-black mb-1">SELESAI!</h2>
+                <p class="text-amber-400 font-semibold text-xs tracking-wider mb-2 uppercase">UPTD SD 16 Barru by Nana Alfiana, S.Pd.,Gr</p>
+                <p id="result-subtitle" class="text-slate-300 text-sm mb-6">Kamu telah menyelesaikan tantangan!</p>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-slate-800/80 p-3 rounded-2xl border border-white/5">
+                        <div class="text-xs text-slate-400 font-bold uppercase">Skor Akhir</div>
+                        <div id="final-score" class="text-2xl font-black text-amber-400">0</div>
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-2xl border border-white/5">
+                        <div class="text-xs text-slate-400 font-bold uppercase">Jawaban Benar</div>
+                        <div id="final-correct" class="text-2xl font-black text-emerald-400">0 / 10</div>
+                    </div>
+                </div>
+
+                <button id="restart-btn" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-black text-lg rounded-2xl shadow-xl shadow-amber-900/40 border-b-4 border-amber-700 transform active:translate-y-1 transition-all">
+                    MAIN LAGI <i class="fa-solid fa-rotate-right ml-2"></i>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Finish / Game Over Modal -->
-    <div id="end-modal" class="modal hidden">
-        <div class="modal-card">
-            <div class="modal-title" id="end-title">SELAMAT!</div>
-            <div class="modal-desc" id="end-desc">Kamu berhasil menyelesaikan semua soal!</div>
-            <div style="font-size: 2.5rem; font-weight: 800; color: #ffd700; margin-bottom: 20px;" id="final-score">0</div>
-            <button class="btn" id="restart-btn">MAIN LAGI</button>
-            <p style="margin-top: 20px; font-size: 0.8rem; color: #64748b;">by Nana Alfiana, S.Pd.,Gr-UPTD SDN 16 BARRU</p>
-        </div>
-    </div>
+    <!-- Mandatory Footer -->
+    <footer class="w-full bg-slate-950 text-amber-400 text-center py-2 px-4 text-xs font-bold tracking-wide border-t border-slate-800 z-40 relative shadow-inner">
+        UPTD SD 16 Barru by Nana Alfiana, S.Pd.,Gr
+    </footer>
 
     <script>
-        // --- DATA SOAL MY FAMILY (10 NOMOR) ---
-        const questions = [
+        /* --- QUESTION BANK (10 SOAL MY FAMILY FASE B KELAS 3) --- */
+        const questionBank = [
             {
-                q: '"Father" artinya...',
-                options: ['A. Ayah', 'B. Ibu', 'C. Paman'],
-                answer: 0
+                q: "Apa bahasa Inggris dari 'Ayah'?",
+                options: ["Mother", "Father", "Brother"],
+                answer: 1 // Father
             },
             {
-                q: '"Mother" artinya...',
-                options: ['A. Bibi', 'B. Ibu', 'C. Nenek'],
-                answer: 1
+                q: "Arti dari kata 'Mother' adalah ...",
+                options: ["Ibu", "Nenek", "Bibi"],
+                answer: 0 // Ibu
             },
             {
-                q: 'Bahasa Inggris dari "Saudara Laki-Laki" adalah...',
-                options: ['A. Sister', 'B. Brother', 'C. Son'],
-                answer: 1
+                q: "Bahasa Inggris dari 'Saudara Laki-laki' adalah ...",
+                options: ["Sister", "Brother", "Uncle"],
+                answer: 1 // Brother
             },
             {
-                q: 'Bahasa Inggris dari "Saudara Perempuan" adalah...',
-                options: ['A. Sister', 'B. Daughter', 'C. Mother'],
-                answer: 0
+                q: "Apa arti dari 'Grandfather'?",
+                options: ["Paman", "Kakek", "Ayah"],
+                answer: 1 // Kakek
             },
             {
-                q: '"Grandfather" artinya...',
-                options: ['A. Paman', 'B. Kakek', 'C. Ayah'],
-                answer: 1
+                q: "Bahasa Inggris dari 'Keluarga' adalah ...",
+                options: ["Friend", "Teacher", "Family"],
+                answer: 2 // Family
             },
             {
-                q: '"Grandmother" artinya...',
-                options: ['A. Nenek', 'B. Bibi', 'C. Ibu'],
-                answer: 0
+                q: "'Sister' dalam bahasa Indonesia artinya ...",
+                options: ["Saudara Perempuan", "Saudara Laki-laki", "Ibu"],
+                answer: 0 // Saudara Perempuan
             },
             {
-                q: '"Uncle" artinya...',
-                options: ['A. Kakek', 'B. Paman', 'C. Bibi'],
-                answer: 1
+                q: "Bahasa Inggris dari 'Nenek' adalah ...",
+                options: ["Grandmother", "Grandfather", "Aunt"],
+                answer: 0 // Grandmother
             },
             {
-                q: '"Aunt" artinya...',
-                options: ['A. Bibi', 'B. Nenek', 'C. Ibu'],
-                answer: 0
+                q: "Siapakah 'Uncle' itu dalam bahasa Indonesia?",
+                options: ["Kakek", "Paman", "Ayah"],
+                answer: 1 // Paman
             },
             {
-                q: '"Son" artinya...',
-                options: ['A. Anak Perempuan', 'B. Anak Laki-Laki', 'C. Cucu'],
-                answer: 1
+                q: "Apa bahasa Inggris dari 'Bibi' atau 'Tante'?",
+                options: ["Aunt", "Sister", "Mother"],
+                answer: 0 // Aunt
             },
             {
-                q: '"Daughter" artinya...',
-                options: ['A. Anak Laki-Laki', 'B. Saudara', 'C. Anak Perempuan'],
-                answer: 2
+                q: "'Cousin' artinya adalah ...",
+                options: ["Sepupu", "Keponakan", "Tetangga"],
+                answer: 0 // Sepupu
             }
         ];
 
-        // --- GAME VARIABLES ---
-        let currentQuestionIdx = 0;
-        let score = 0;
-        let isPlaying = false;
-        let targetLane = 0; // -1: Left, 0: Center, 1: Right
-        let currentLane = 0;
-        let playerJumping = false;
-        let jumpVelocity = 0;
-        const GRAVITY = 0.015;
-        
-        // 55% Kecepatan Lari
-        const GAME_SPEED = 0.255;
-        const GATE_SPAWN_Z = -80;
-
-        // Sound Effects via Web Audio API
-        let audioCtx = null;
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-
-        function playSound(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            const now = audioCtx.currentTime;
-
-            if (type === 'step') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(120, now);
-                osc.frequency.exponentialRampToValueAtTime(30, now + 0.08);
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
-                osc.start(now);
-                osc.stop(now + 0.08);
-            } else if (type === 'jump') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(200, now);
-                osc.frequency.exponentialRampToValueAtTime(500, now + 0.2);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
-            } else if (type === 'correct') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now); // C5
-                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
-                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
-                osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
-                osc.start(now);
-                osc.stop(now + 0.5);
-            } else if (type === 'wrong') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(180, now);
-                osc.frequency.setValueAtTime(110, now + 0.15);
-                gain.gain.setValueAtTime(0.4, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
-            }
-        }
-
-        // --- THREE.JS SCENE SETUP ---
+        // Game Engine Variables
         let scene, camera, renderer;
-        let playerGroup, playerBody, leftLeg, rightLeg;
-        let roadGroup, environmentGroup, gateGroup;
-        let gateObjects = [];
+        let playerGroup, playerBody;
+        let lanePositions = [-3, 0, 3]; // Left, Center, Right lanes
+        let currentLane = 1; // 0: Left, 1: Center, 2: Right
+        let targetX = 0;
+        
+        // Physics & Movement
+        let isJumping = false;
+        let isSliding = false;
+        let jumpVelocity = 0;
+        const gravity = -0.018;
+        let playerY = 0;
+        let playerScaleY = 1;
 
-        const LANE_X = [-3.5, 0, 3.5];
+        // Gameplay State
+        let isPlaying = false;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let coins = 0;
+        let correctAnswers = 0;
+        let lives = 3;
+        let gameSpeed = 0.25;
+        let worldDistance = 0;
+
+        // Dynamic Game Objects
+        let roadSegments = [];
+        let gates = [];
+        let obstacles = [];
+        let coinObjects = [];
+        let gateSpawnDistance = 60;
 
         function init3D() {
-            const container = document.getElementById('canvas-container');
+            const container = document.getElementById('game-container');
             
+            // Scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x60c5fa);
-            scene.fog = new THREE.FogExp2(0x60c5fa, 0.015);
+            scene.background = new THREE.Color(0x1e293b);
+            scene.fog = new THREE.FogExp2(0x1e293b, 0.015);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-            camera.position.set(0, 5, 9);
-            camera.lookAt(0, 2, -5);
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 4.5, 8);
+            camera.rotation.x = -0.3;
 
+            // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
-            // Lights
+            // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
 
@@ -472,169 +304,492 @@
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 1024;
             dirLight.shadow.mapSize.height = 1024;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 150;
+            dirLight.shadow.camera.left = -20;
+            dirLight.shadow.camera.right = 20;
+            dirLight.shadow.camera.top = 20;
+            dirLight.shadow.camera.bottom = -20;
             scene.add(dirLight);
 
-            // Build Scenery
-            createRoad();
+            // Build Initial World
             createPlayer();
             createEnvironment();
-            createGateGroup();
 
+            // Handle Resize
             window.addEventListener('resize', onWindowResize);
-        }
-
-        function createRoad() {
-            roadGroup = new THREE.Group();
-            
-            // Main Asphalt
-            const roadGeo = new THREE.PlaneGeometry(12, 300);
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
-            const road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2;
-            road.position.z = -100;
-            road.receiveShadow = true;
-            roadGroup.add(road);
-
-            // Lane Dividers
-            for (let i = 0; i < 60; i++) {
-                const lineGeo = new THREE.PlaneGeometry(0.2, 2);
-                const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                
-                const line1 = new THREE.Mesh(lineGeo, lineMat);
-                line1.rotation.x = -Math.PI / 2;
-                line1.position.set(-1.75, 0.01, -i * 5);
-                roadGroup.add(line1);
-
-                const line2 = new THREE.Mesh(lineGeo, lineMat);
-                line2.rotation.x = -Math.PI / 2;
-                line2.position.set(1.75, 0.01, -i * 5);
-                roadGroup.add(line2);
-            }
-
-            // Green Sidewalks
-            const sideGeo = new THREE.PlaneGeometry(40, 300);
-            const sideMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 });
-            
-            const leftSide = new THREE.Mesh(sideGeo, sideMat);
-            leftSide.rotation.x = -Math.PI / 2;
-            leftSide.position.set(-26, -0.05, -100);
-            roadGroup.add(leftSide);
-
-            const rightSide = new THREE.Mesh(sideGeo, sideMat);
-            rightSide.rotation.x = -Math.PI / 2;
-            rightSide.position.set(26, -0.05, -100);
-            roadGroup.add(rightSide);
-
-            scene.add(roadGroup);
         }
 
         function createPlayer() {
             playerGroup = new THREE.Group();
 
-            // Torso
-            const torsoGeo = new THREE.BoxGeometry(0.8, 1.1, 0.5);
-            const torsoMat = new THREE.MeshStandardMaterial({ color: 0x0284c7 });
-            playerBody = new THREE.Mesh(torsoGeo, torsoMat);
-            playerBody.position.y = 1.3;
+            // Body (Runner Boy/Girl Style)
+            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.4, 1.4, 12);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.3 }); // Blue Shirt
+            playerBody = new THREE.Mesh(bodyGeo, bodyMat);
+            playerBody.position.y = 0.9;
             playerBody.castShadow = true;
             playerGroup.add(playerBody);
 
             // Head
-            const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-            const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const headGeo = new THREE.SphereGeometry(0.4, 16, 16);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xfbd38d }); // Skin
             const head = new THREE.Mesh(headGeo, headMat);
-            head.position.y = 2.05;
+            head.position.y = 1.8;
             head.castShadow = true;
             playerGroup.add(head);
 
-            // Legs
-            const legGeo = new THREE.BoxGeometry(0.3, 0.8, 0.3);
-            const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+            // Hair/Cap
+            const capGeo = new THREE.SphereGeometry(0.42, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            const capMat = new THREE.MeshStandardMaterial({ color: 0xef4444 }); // Red Cap
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.y = 1.85;
+            playerGroup.add(cap);
 
-            leftLeg = new THREE.Mesh(legGeo, legMat);
-            leftLeg.position.set(-0.2, 0.4, 0);
-            leftLeg.castShadow = true;
-            playerGroup.add(leftLeg);
+            // Visor
+            const visorGeo = new THREE.BoxGeometry(0.4, 0.05, 0.3);
+            const visor = new THREE.Mesh(visorGeo, capMat);
+            visor.position.set(0, 1.85, -0.35);
+            playerGroup.add(visor);
 
-            rightLeg = new THREE.Mesh(legGeo, legMat);
-            rightLeg.position.set(0.2, 0.4, 0);
-            rightLeg.castShadow = true;
-            playerGroup.add(rightLeg);
+            // Backpack
+            const packGeo = new THREE.BoxGeometry(0.6, 0.7, 0.3);
+            const packMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b });
+            const pack = new THREE.Mesh(packGeo, packMat);
+            pack.position.set(0, 1.0, 0.35);
+            playerGroup.add(pack);
 
             playerGroup.position.set(0, 0, 0);
             scene.add(playerGroup);
         }
 
         function createEnvironment() {
-            environmentGroup = new THREE.Group();
+            // Create continuous road tiles
+            for (let i = 0; i < 10; i++) {
+                spawnRoadTile(i * -20);
+            }
+        }
 
-            // Decorative Trees & Buildings on sides
-            for (let i = 0; i < 30; i++) {
-                const z = -i * 10;
+        function spawnRoadTile(zPos) {
+            const roadGroup = new THREE.Group();
+
+            // Main Track (3 Lanes)
+            const roadGeo = new THREE.BoxGeometry(11, 0.2, 20);
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
+            const road = new THREE.Mesh(roadGeo, roadMat);
+            road.position.y = -0.1;
+            road.receiveShadow = true;
+            roadGroup.add(road);
+
+            // Lane Dividers
+            const lineGeo = new THREE.BoxGeometry(0.15, 0.22, 20);
+            const lineMat = new THREE.MeshStandardMaterial({ color: 0xfacc15 });
+            
+            const line1 = new THREE.Mesh(lineGeo, lineMat);
+            line1.position.set(-1.5, -0.09, 0);
+            roadGroup.add(line1);
+
+            const line2 = new THREE.Mesh(lineGeo, lineMat);
+            line2.position.set(1.5, -0.09, 0);
+            roadGroup.add(line2);
+
+            // Side grass / decor
+            const grassGeo = new THREE.BoxGeometry(10, 0.2, 20);
+            const grassMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
+            
+            const grassL = new THREE.Mesh(grassGeo, grassMat);
+            grassL.position.set(-10.5, -0.1, 0);
+            roadGroup.add(grassL);
+
+            const grassR = new THREE.Mesh(grassGeo, grassMat);
+            grassR.position.set(10.5, -0.1, 0);
+            roadGroup.add(grassR);
+
+            roadGroup.position.z = zPos;
+            scene.add(roadGroup);
+            roadSegments.push(roadGroup);
+        }
+
+        function createQuestionGates(zPos, questionData) {
+            const gateGroup = new THREE.Group();
+            gateGroup.position.z = zPos;
+            gateGroup.userData = { answered: false, questionData: questionData };
+
+            const labels = ["A", "B", "C"];
+
+            questionData.options.forEach((optText, index) => {
+                const laneX = lanePositions[index];
+
+                // Gate Pillars
+                const pGeo = new THREE.CylinderGeometry(0.15, 0.15, 3.5);
+                const pMat = new THREE.MeshStandardMaterial({ color: 0x64748b });
                 
-                // Trees Left
-                const tree = createTree();
-                tree.position.set(-9 - Math.random() * 4, 0, z);
-                environmentGroup.add(tree);
+                const p1 = new THREE.Mesh(pGeo, pMat);
+                p1.position.set(laneX - 1.2, 1.75, 0);
+                const p2 = new THREE.Mesh(pGeo, pMat);
+                p2.position.set(laneX + 1.2, 1.75, 0);
+                gateGroup.add(p1, p2);
 
-                // Buildings Right
-                const bldg = createBuilding();
-                bldg.position.set(10 + Math.random() * 3, 0, z);
-                environmentGroup.add(bldg);
+                // Gate Top Banner
+                const bGeo = new THREE.BoxGeometry(2.5, 1.2, 0.2);
+                const isCorrect = (index === questionData.answer);
+                const bMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x1e293b, 
+                    roughness: 0.2
+                });
+                const banner = new THREE.Mesh(bGeo, bMat);
+                banner.position.set(laneX, 3.2, 0);
+                gateGroup.add(banner);
+
+                // Create Canvas Texture for Text (Label + Option Text)
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+
+                // Canvas Background
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, 512, 256);
+                ctx.lineWidth = 12;
+                ctx.strokeStyle = '#f59e0b';
+                ctx.strokeRect(0, 0, 512, 256);
+
+                // Text Formatting
+                ctx.fillStyle = '#facc15';
+                ctx.font = 'bold 50px Fredoka, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`[ ${labels[index]} ]`, 256, 70);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 42px Fredoka, sans-serif';
+                // Wrap text if needed
+                ctx.fillText(optText, 256, 160);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const textGeo = new THREE.PlaneGeometry(2.4, 1.1);
+                const textMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+                const textMesh = new THREE.Mesh(textGeo, textMat);
+                textMesh.position.set(laneX, 3.2, 0.11);
+                gateGroup.add(textMesh);
+
+                // Save Metadata for Collision Check
+                banner.userData = {
+                    optionIndex: index,
+                    isCorrect: isCorrect,
+                    parentGate: gateGroup
+                };
+            });
+
+            scene.add(gateGroup);
+            gates.push(gateGroup);
+        }
+
+        function spawnCoinsAndObstacles(zPos) {
+            // Randomly place coins on lanes
+            for (let i = 0; i < 3; i++) {
+                if (Math.random() > 0.4) {
+                    const coinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 16);
+                    const coinMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 });
+                    const coin = new THREE.Mesh(coinGeo, coinMat);
+                    coin.rotation.x = Math.PI / 2;
+                    coin.position.set(lanePositions[i], 0.8, zPos + (Math.random() * 10 - 5));
+                    scene.add(coin);
+                    coinObjects.push(coin);
+                }
+            }
+        }
+
+        function setupControls() {
+            document.addEventListener('keydown', (e) => {
+                if (!isPlaying) return;
+
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    moveLane(-1);
+                } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    moveLane(1);
+                } else if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && !isJumping) {
+                    jump();
+                } else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && !isSliding) {
+                    slide();
+                }
+            });
+
+            // Mobile Buttons
+            document.getElementById('btn-left').addEventListener('click', () => moveLane(-1));
+            document.getElementById('btn-right').addEventListener('click', () => moveLane(1));
+            document.getElementById('btn-jump').addEventListener('click', () => { if (!isJumping) jump(); });
+            document.getElementById('btn-slide').addEventListener('click', () => { if (!isSliding) slide(); });
+
+            // Touch Swipe Logic
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchend', (e) => {
+                if (!isPlaying) return;
+                let diffX = e.changedTouches[0].clientX - touchStartX;
+                let diffY = e.changedTouches[0].clientY - touchStartY;
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (diffX > 30) moveLane(1);
+                    else if (diffX < -30) moveLane(-1);
+                } else {
+                    if (diffY < -30 && !isJumping) jump();
+                    else if (diffY > 30 && !isSliding) slide();
+                }
+            });
+        }
+
+        function moveLane(dir) {
+            currentLane = Math.max(0, Math.min(2, currentLane + dir));
+            targetX = lanePositions[currentLane];
+        }
+
+        function jump() {
+            isJumping = true;
+            jumpVelocity = 0.35;
+        }
+
+        function slide() {
+            isSliding = true;
+            playerScaleY = 0.5;
+            setTimeout(() => {
+                isSliding = false;
+                playerScaleY = 1.0;
+            }, 800);
+        }
+
+        function update() {
+            if (!isPlaying) return;
+
+            // Player Horizontal Smooth Movement
+            playerGroup.position.x += (targetX - playerGroup.position.x) * 0.2;
+
+            // Player Jump Physics
+            if (isJumping) {
+                playerY += jumpVelocity;
+                jumpVelocity += gravity;
+                if (playerY <= 0) {
+                    playerY = 0;
+                    isJumping = false;
+                }
+            }
+            playerGroup.position.y = playerY;
+
+            // Scale for slide
+            playerBody.scale.y = THREE.MathUtils.lerp(playerBody.scale.y, playerScaleY, 0.2);
+
+            // Running Animation (Slight tilt & bounce)
+            if (!isJumping) {
+                playerGroup.rotation.z = (playerGroup.position.x - targetX) * -0.1;
+                playerBody.rotation.x = Math.sin(Date.now() * 0.015) * 0.1;
             }
 
-            scene.add(environmentGroup);
+            // Move Road & Environment Backwards
+            const currentSpeed = gameSpeed;
+            worldDistance += currentSpeed;
+
+            // Road Recycling Loop
+            roadSegments.forEach((segment) => {
+                segment.position.z += currentSpeed;
+                if (segment.position.z > 15) {
+                    segment.position.z -= 200; // Loop back
+                }
+            });
+
+            // Rotate and Move Coins
+            for (let i = coinObjects.length - 1; i >= 0; i--) {
+                const coin = coinObjects[i];
+                coin.position.z += currentSpeed;
+                coin.rotation.z += 0.05;
+
+                // Coin Collection Detection
+                if (Math.abs(coin.position.z - playerGroup.position.z) < 1.0 &&
+                    Math.abs(coin.position.x - playerGroup.position.x) < 0.8 &&
+                    playerY < 1.5) {
+                    scene.remove(coin);
+                    coinObjects.splice(i, 1);
+                    coins += 1;
+                    score += 10;
+                    updateHUD();
+                } else if (coin.position.z > 10) {
+                    scene.remove(coin);
+                    coinObjects.splice(i, 1);
+                }
+            }
+
+            // Gate Logic & Question Check
+            for (let i = gates.length - 1; i >= 0; i--) {
+                const gate = gates[i];
+                gate.position.z += currentSpeed;
+
+                // Check Player Passing Through Gate
+                if (!gate.userData.answered && gate.position.z > -0.5 && gate.position.z < 1.5) {
+                    gate.userData.answered = true;
+                    checkAnswer(currentLane, gate.userData.questionData);
+                }
+
+                // Cleanup passed gates
+                if (gate.position.z > 15) {
+                    scene.remove(gate);
+                    gates.splice(i, 1);
+                }
+            }
+
+            // Spawn Next Question Gate if none in queue
+            if (gates.length === 0 && currentQuestionIndex < questionBank.length) {
+                spawnCurrentQuestionGate();
+            }
         }
 
-        function createTree() {
-            const tree = new THREE.Group();
-            const trunkGeo = new THREE.CylinderGeometry(0.2, 0.3, 1.5);
-            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
-            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-            trunk.position.y = 0.75;
-            trunk.castShadow = true;
-            tree.add(trunk);
+        function spawnCurrentQuestionGate() {
+            if (currentQuestionIndex >= questionBank.length) return;
 
-            const foliageGeo = new THREE.ConeGeometry(1.2, 2.5, 5);
-            const foliageMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
-            const foliage = new THREE.Mesh(foliageGeo, foliageMat);
-            foliage.position.y = 2.5;
-            foliage.castShadow = true;
-            tree.add(foliage);
-
-            return tree;
+            const qData = questionBank[currentQuestionIndex];
+            createQuestionGates(-60, qData);
+            spawnCoinsAndObstacles(-30);
+            updateQuestionUI(qData);
         }
 
-        function createBuilding() {
-            const h = 4 + Math.random() * 6;
-            const bldgGeo = new THREE.BoxGeometry(4, h, 4);
-            const bldgMat = new THREE.MeshStandardMaterial({ color: Math.random() > 0.5 ? 0xf87171 : 0xfbbf24 });
-            const bldg = new THREE.Mesh(bldgGeo, bldgMat);
-            bldg.position.y = h / 2;
-            bldg.castShadow = true;
-            return bldg;
-        }
-
-        // Canvas Texture generator for Answer Boards
-        function createTextTexture(text) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.lineWidth = 12;
-            ctx.strokeStyle = '#38bdf8';
-            ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
-
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 36px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+        function checkAnswer(selectedOptionIndex, qData) {
+            const isCorrect = (selectedOptionIndex === qData.answer);
             
-            // Wrap text if long
-            const words = text.split(' ');
-            if (words.length > 2) {
-                ctx.fillText(words.slice(0, 2
+            showFeedback(isCorrect);
+
+            if (isCorrect) {
+                score += 100;
+                correctAnswers++;
+            } else {
+                score = Math.max(0, score - 30);
+                lives--;
+            }
+
+            updateHUD();
+
+            // Next Question or End Game
+            currentQuestionIndex++;
+            if (lives <= 0 || currentQuestionIndex >= questionBank.length) {
+                setTimeout(endGame, 1200);
+            }
+        }
+
+        function showFeedback(isCorrect) {
+            const overlay = document.getElementById('feedback-overlay');
+            const icon = document.getElementById('feedback-icon');
+            const text = document.getElementById('feedback-text');
+
+            if (isCorrect) {
+                overlay.className = "feedback-overlay absolute inset-0 flex flex-col items-center justify-center bg-emerald-500/20 z-20 transition-opacity duration-300 opacity-100";
+                icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+                text.innerText = "BENAR! GREAT JOB!";
+                text.className = "text-4xl font-black text-emerald-300 drop-shadow-lg tracking-wider uppercase";
+            } else {
+                overlay.className = "feedback-overlay absolute inset-0 flex flex-col items-center justify-center bg-red-500/20 z-20 transition-opacity duration-300 opacity-100";
+                icon.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-500"></i>';
+                text.innerText = "SALAH! OOPS!";
+                text.className = "text-4xl font-black text-red-400 drop-shadow-lg tracking-wider uppercase";
+            }
+
+            icon.style.transform = "scale(1)";
+
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                icon.style.transform = "scale(0.5)";
+            }, 1000);
+        }
+
+        function updateHUD() {
+            document.getElementById('score-text').innerText = score;
+            document.getElementById('coins-text').innerText = coins;
+            document.getElementById('lives-text').innerText = lives;
+            document.getElementById('question-number').innerText = `Soal ${Math.min(currentQuestionIndex + 1, 10)} / 10`;
+        }
+
+        function updateQuestionUI(qData) {
+            const qText = document.getElementById('question-text');
+            qText.innerText = qData.q;
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+
+            // Reset States
+            score = 0;
+            coins = 0;
+            lives = 3;
+            correctAnswers = 0;
+            currentQuestionIndex = 0;
+            currentLane = 1;
+            targetX = lanePositions[currentLane];
+            playerGroup.position.set(0, 0, 0);
+
+            // Clear old gates
+            gates.forEach(g => scene.remove(g));
+            gates = [];
+            coinObjects.forEach(c => scene.remove(c));
+            coinObjects = [];
+
+            updateHUD();
+            isPlaying = true;
+            spawnCurrentQuestionGate();
+        }
+
+        function endGame() {
+            isPlaying = false;
+            document.getElementById('hud').classList.add('hidden');
+            const gameOverScreen = document.getElementById('game-over-screen');
+            gameOverScreen.classList.remove('hidden');
+
+            const resIcon = document.getElementById('result-icon');
+            const resTitle = document.getElementById('result-title');
+            const resSub = document.getElementById('result-subtitle');
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-correct').innerText = `${correctAnswers} / 10`;
+
+            if (correctAnswers >= 7) {
+                resIcon.className = "w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-5xl mb-4 shadow-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+                resIcon.innerHTML = '<i class="fa-solid fa-crown"></i>';
+                resTitle.innerText = "HEBAT / EXCELLENT!";
+                resTitle.className = "text-3xl font-black mb-2 text-emerald-400";
+                resSub.innerText = "Kamu menguasai kosakata My Family dengan sangat baik!";
+            } else {
+                resIcon.className = "w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-5xl mb-4 shadow-lg bg-amber-500/20 text-amber-400 border border-amber-500/40";
+                resIcon.innerHTML = '<i class="fa-solid fa-star-half-stroke"></i>';
+                resTitle.innerText = "BAGUS! COBA LAGI!";
+                resTitle.className = "text-3xl font-black mb-2 text-amber-400";
+                resSub.innerText = "Ayo berlatih lagi agar kosakata Bahasa Inggrismu makin lancar!";
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function () {
+            init3D();
+            setupControls();
+            animate();
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', () => {
+                document.getElementById('game-over-screen').classList.add('hidden');
+                startGame();
+            });
+        };
+    </script>
+</body>
+</html>
